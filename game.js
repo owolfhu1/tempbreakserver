@@ -265,7 +265,7 @@ function Game() {
                     //check if it will hit a block
                     for (let i in blocks) {
 
-                        if (blocks[i]) {
+                        if (blocks[i] && deletedX + deletedY === 0) {
 
                             let {width, height} = blocks[i];
                             let x = blocks[i].left;
@@ -277,55 +277,137 @@ function Game() {
                                 ball.y < y + height) {
 
 
-                            const testBall = new SSCD.World();
+                                const testBall = new SSCD.World();
+                                //
+                                // const middleBall = new SSCD.World();
+                                //
+                                // middleBall.add(new SSCD.Circle(
+                                //     new SSCD.Vector(ball.x + (.5 * ball.dir.x) + ball.radius, ball.y + (.5 * ball.dir.y) + ball.radius),
+                                //     ball.radius));
 
-                            // const middleBall = new SSCD.World();
+                                testBall.add(new SSCD.Circle(
+                                    new SSCD.Vector(nextBall.x + ball.radius, nextBall.y + ball.radius),
+                                    ball.radius));
 
-                            // middleBall.add(new SSCD.Circle(
-                            //     new SSCD.Vector(ball.x + (.5 * ball.dir.x) + ball.radius, ball.y + (.5 * ball.dir.y) + ball.radius),
-                            //     ball.radius));
+                                let result = '';
 
-                            testBall.add(new SSCD.Circle(
-                                new SSCD.Vector(nextBall.x + ball.radius, nextBall.y + ball.radius),
-                                ball.radius));
-
-                            let result = '';
-
-
-                            // if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x + width, y))))
-                            //     result = 'bottom';
-                            // else if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x, y + height))))
-                            //     result = 'left';
-                            // else if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y + height), new SSCD.Vector(x + width, y + height))))
-                            //     result = 'top';
-                            // else if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x + width, y + height), new SSCD.Vector(x + width, y))))
-                            //     result = 'right';
-                            if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x + width, y))))
-                                result = 'bottom';
-                            else if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x, y + height))))
-                                result = 'left';
-                            else if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y + height), new SSCD.Vector(x + width, y + height))))
-                                result = 'top';
-                            else if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x + width, y + height), new SSCD.Vector(x + width, y))))
-                                result = 'right';
+                                let functions = [];
 
 
-                            if (result) {
+                                // functions.push(
+                                //     () => {
+                                //         if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x + width, y))))
+                                //             result = 'bottom';
+                                //     }
+                                // );
+                                //
+                                // functions.push(
+                                //     () => {
+                                //         if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x, y + height))))
+                                //             result = 'left';
+                                //     }
+                                // );
+                                //
+                                // functions.push(
+                                //     () => {
+                                //         if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y + height), new SSCD.Vector(x + width, y + height))))
+                                //             result = 'top';
+                                //     }
+                                // );
+                                //
+                                // functions.push(
+                                //     () => {
+                                //         if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x + width, y + height), new SSCD.Vector(x + width, y))))
+                                //             result = 'right';
+                                //     }
+                                // );
+                                //
+                                // functions = shuffle(functions);
+                                //
+                                // functions[0]();
+                                //
+                                // if (!result)
+                                //     functions[1]();
+                                // if (!result)
+                                //     functions[2]();
+                                // if (!result)
+                                //     functions[3]();
 
-                                delete blocks[i];
-                                player.points++;
-                                bounceOfBlock = true;
+                                if (!result) {
 
-                                if (result === 'top' || result === 'bottom') {
-                                    ball.dir.y = ball.dir.y * -1;
-                                    deletedY++;
-                                } else if (result === 'left' || result === 'right') {
-                                    ball.dir.x = ball.dir.x * -1;
-                                    deletedX++;
+                                    //functions = [];
+
+                                    functions.push(
+                                        () => {
+                                            if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x + width, y))))
+                                                result = 'bottom';
+                                        }
+                                    );
+
+                                    functions.push(
+                                        () => {
+                                            if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x, y + height))))
+                                                result = 'left';
+                                        }
+                                    );
+
+                                    functions.push(
+                                        () => {
+                                            if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y + height), new SSCD.Vector(x + width, y + height))))
+                                                result = 'top';
+                                        }
+                                    );
+
+                                    functions.push(
+                                        () => {
+                                            if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x + width, y + height), new SSCD.Vector(x + width, y))))
+                                                result = 'right';
+                                        }
+                                    );
+
+
+                                    functions = shuffle(functions);
+
+                                    functions[0]();
+
+                                    if (!result)
+                                        functions[1]();
+                                    if (!result)
+                                        functions[2]();
+                                    if (!result)
+                                        functions[3]();
+
                                 }
+                                //
+                                // if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x + width, y))))
+                                //     result = 'bottom';
+                                //
+                                //
+                                // else if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x, y + height))))
+                                //     result = 'left';
+                                // else if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y + height), new SSCD.Vector(x + width, y + height))))
+                                //     result = 'top';
+                                // else if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x + width, y + height), new SSCD.Vector(x + width, y))))
+                                //     result = 'right';
 
 
-                            }
+
+                                if (result) {
+
+                                    delete blocks[i];
+                                    player.points++;
+                                    bounceOfBlock = true;
+
+                                    if (result === 'top' || result === 'bottom') {
+                                        ball.dir.y = ball.dir.y * -1;
+                                        deletedY++;
+                                    } else if (result === 'left' || result === 'right') {
+                                        ball.dir.x = ball.dir.x * -1;
+                                        deletedX++;
+                                    }
+
+
+                                }
 
                             }
 
@@ -377,6 +459,7 @@ function Game() {
 
 
             }
+
 
         }
 
