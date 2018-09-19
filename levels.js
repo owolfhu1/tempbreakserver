@@ -112,19 +112,20 @@ const levels = [
 //crazyTestLevel(),
 levelOne(),
     levelThree(),
+    levelFour(),
  
     levelTwo(),
 
 
-    levelOne(), levelTwo(), levelThree(),
-    levelOne(), levelTwo(), levelThree(),
-    levelOne(), levelTwo(), levelThree(),
     levelOne(), levelTwo(), levelThree(), levelFour(),
     levelOne(), levelTwo(), levelThree(), levelFour(),
-    levelOne(), levelTwo(), levelThree(),
-    levelOne(), levelTwo(), levelThree(),
-    levelOne(), levelTwo(), levelThree(),
-    levelOne(), levelTwo(), levelThree(),
+    levelOne(), levelTwo(), levelThree(), levelFour(),
+    levelOne(), levelTwo(), levelThree(), levelFour(),
+    levelOne(), levelTwo(), levelThree(), levelFour(),
+    levelOne(), levelTwo(), levelThree(), levelFour(),
+    levelOne(), levelTwo(), levelThree(), levelFour(),
+    levelOne(), levelTwo(), levelThree(), levelFour(),
+    levelOne(), levelTwo(), levelThree(), levelFour(),
 
 ];
 

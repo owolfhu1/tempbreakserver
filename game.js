@@ -1,5 +1,7 @@
-const Constants = require('./constants/Constants');
+const Constants = require('../constants/Constants');
 const levels = require('./levels');
+const SSCD = require('sscd').sscd;
+
 
 function Player(color) {
     this.points = 0;
@@ -69,6 +71,14 @@ function Game() {
 
         });
 
+//ok that wasnt it
+
+        //this is suppost to check if you are right under a paddle and cancle a jump
+
+    //i think the fix may be to account for yPotential here..? maybe... 
+    //but also maybe better if i can figure out why its
+    //happening in the first place
+
         //check if a player is on top of you
         Object.keys(players).forEach(key => {
 
@@ -117,8 +127,8 @@ function Game() {
                             ) &&
                             otherPaddle.width + otherPaddle.x >= myPaddle.x - myPaddle.speed &&
                             myPaddle.x - myPaddle.speed > otherPaddle.x
-                    )
-                        leftPaddle = otherPaddle;
+                        )
+                            leftPaddle = otherPaddle;
                     });
                     if (leftPaddle)
                         myPaddle.x = leftPaddle.width + leftPaddle.x;
@@ -162,32 +172,45 @@ function Game() {
 
             if (player.jumping) {
 
+                //holds potential paddles that are over me within range of my yPotential
                 let abovePaddle;
 
+
+                //look at every players paddle who isnt you
                 Object.keys(players).forEach(key => {
                     if (key !== name) {
+
+                        //another player's paddle
                         let otherPaddle = players[key].paddle;
+
                         if (
-                            (
+                            
+                            ( //other players paddle is in x range of yours
                                 otherPaddle.x < myPaddle.x && otherPaddle.x + otherPaddle.width > myPaddle.x ||
                                 otherPaddle.x > myPaddle.x && otherPaddle.x < myPaddle.x + myPaddle.width ||
                                 otherPaddle.x === myPaddle.x
                             ) &&
+
+                            //and other players within yPotential
                             otherPaddle.y <= myPaddle.y + yPotential + 5 &&
-                            myPaddle.y + yPotential < otherPaddle.y
+                            myPaddle.y + 5 <= otherPaddle.y
                         )
+
+                                //if all that then set the above paddle to this guys
                             abovePaddle = otherPaddle;
                     }
                 });
 
+
+                //if they are tooooo high, start falling
                 if (player.paddle.y >= 100)
                     player.jumping = false;
-                else if (abovePaddle) {
-                    player.jumping = false;
-                    myPaddle.y = abovePaddle.y - 5;
-                } else
+   
+                else if (abovePaddle) {//if we found a paddle
+                    player.jumping = false;//stop jumping
+                    myPaddle.y = abovePaddle.y - 5; //move to right under abovePaddle i see//so you should look like you are hiting them and thens tart falling
+                } else                
                     myPaddle.y = myPaddle.y + yPotential;
-
             }
 
             //do fall w/ collision
@@ -206,8 +229,8 @@ function Game() {
                                 otherPaddle.x === myPaddle.x
                             )
                             &&
-                            5 + otherPaddle.y >= myPaddle.y - yPotential &&
-                            myPaddle.y - yPotential < otherPaddle.y
+                            otherPaddle.y + 5 >= myPaddle.y - yPotential &&
+                            myPaddle.y - 5 >= otherPaddle.y
                         )
                             underPaddle = otherPaddle;
                     }
@@ -217,9 +240,8 @@ function Game() {
                     myPaddle.y = underPaddle.y + 5;
                 } else
                     myPaddle.y = myPaddle.y - yPotential;
-
-                 if (myPaddle.y < 0)
-                     myPaddle.y = 0;
+                if (myPaddle.y < 0)//hmm im so cunfused lol
+                    myPaddle.y = 0;
 
             }
 
@@ -245,11 +267,9 @@ function Game() {
 
                         if (blocks[i]) {
 
-
                             let {width, height} = blocks[i];
                             let x = blocks[i].left;
                             let y = blocks[i].bottom;
-
 
                             if (ball.x > x - ball.radius &&
                                 ball.y < y + ball.radius &&
@@ -257,54 +277,55 @@ function Game() {
                                 ball.y < y + height) {
 
 
-                                let blockCenterX = x + width / 2;
-                                let blockCenterY = y - height / 2;
+                            const testBall = new SSCD.World();
 
-                                // let ballCenterX = player.ball.x + player.ball.radius;
-                                // let ballCenterY = player.ball.y - player.ball.radius;
+                            // const middleBall = new SSCD.World();
 
-                                let ballCenterX = nextBall.x + ball.radius;
-                                let ballCenterY = nextBall.y - ball.radius;
+                            // middleBall.add(new SSCD.Circle(
+                            //     new SSCD.Vector(ball.x + (.5 * ball.dir.x) + ball.radius, ball.y + (.5 * ball.dir.y) + ball.radius),
+                            //     ball.radius));
 
-                                let xDist = Math.abs(ballCenterX - blockCenterX);
-                                let yDist = Math.abs(ballCenterY - blockCenterY);
-                                let cornerDist = (xDist - width / 2) ^ 2 +
-                                    (yDist - height / 2) ^ 2;
+                            testBall.add(new SSCD.Circle(
+                                new SSCD.Vector(nextBall.x + ball.radius, nextBall.y + ball.radius),
+                                ball.radius));
 
-                                if (
-                                    !(xDist > (width / 2 + ball.radius)) &&
-                                    !(yDist > (height / 2 + ball.radius))
-                                ) {
-                                    if (
-                                        (xDist <= (width / 2)) ||
-                                        (yDist <= (height / 2)) ||
-                                        (cornerDist <= (ball.radius ^ 2))
-                                    ) {
+                            let result = '';
 
-                                        delete blocks[i];
-                                        player.points++;
-                                        bounceOfBlock = true;
 
-                                        if (ballCenterY < blockCenterY) {
-                                            ball.dir.y = ball.dir.y * -1;
-                                            deletedY++;
-                                        } else if (ballCenterY > blockCenterY) {
-                                            ball.dir.y = ball.dir.y * -1;
-                                            deletedY++;
-                                        } else if (ballCenterX < blockCenterX) {
-                                            ball.dir.x = ball.dir.x * -1;
-                                            deletedX++;
-                                        } else if (ballCenterX > blockCenterX) {
-                                            ball.dir.x = ball.dir.x * -1;
-                                            deletedX++;
-                                        } else {
-                                            ball.dir.y = ball.dir.y * -1;
-                                            deletedY++;
-                                        }
+                            // if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x + width, y))))
+                            //     result = 'bottom';
+                            // else if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x, y + height))))
+                            //     result = 'left';
+                            // else if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y + height), new SSCD.Vector(x + width, y + height))))
+                            //     result = 'top';
+                            // else if (middleBall.test_collision(new SSCD.Line(new SSCD.Vector(x + width, y + height), new SSCD.Vector(x + width, y))))
+                            //     result = 'right';
+                            if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x + width, y))))
+                                result = 'bottom';
+                            else if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y), new SSCD.Vector(x, y + height))))
+                                result = 'left';
+                            else if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x, y + height), new SSCD.Vector(x + width, y + height))))
+                                result = 'top';
+                            else if (testBall.test_collision(new SSCD.Line(new SSCD.Vector(x + width, y + height), new SSCD.Vector(x + width, y))))
+                                result = 'right';
 
-                                    }
 
+                            if (result) {
+
+                                delete blocks[i];
+                                player.points++;
+                                bounceOfBlock = true;
+
+                                if (result === 'top' || result === 'bottom') {
+                                    ball.dir.y = ball.dir.y * -1;
+                                    deletedY++;
+                                } else if (result === 'left' || result === 'right') {
+                                    ball.dir.x = ball.dir.x * -1;
+                                    deletedX++;
                                 }
+
+
+                            }
 
                             }
 
@@ -333,48 +354,38 @@ function Game() {
                         ball.dir.x = -1 * ball.dir.x;
                     }
 
-                    //bounce off paddle
-                    // else if (player.ball.y < player.paddle.y && paddleHit(player.ball, player.paddle) && player.ball.dir.y < 0) {
-                    //     player.ball.dir.y = player.jumping ? Math.abs(player.ball.dir.y) + 1 : 1;
-                    //     player.ball.dir.x =
-                    //         paddleHit(player.ball, player.paddle) === 'center' ? (player.ball.dir.x > 0 ? 1 : -1) :
-                    //             paddleHit(player.ball, player.paddle) === 'left' ? -2 : 2;
-                    // }
-
+                    //bounce off a paddle
                     for (let key in players) {
                         let paddle = players[key].paddle;
                         let jumping = players[key].jumping;
                         if (
                             ball.y < paddle.y &&
-                            paddleHit(ball,paddle) &&
+                            paddleHit(ball, paddle) &&
                             ball.dir.y < 0
                         ) {
-                             ball.dir.y = jumping ? Math.abs(ball.dir.y) + 1 : 1;
-                             ball.dir.x = paddleHit(ball,paddle) === 'center' ? (ball.dir.x > 0 ? 1 : -1) :
-                                 (paddleHit(ball,paddle) === 'left' ? -2 : 2);
-                             players[key].balls.push(player.balls.splice(b*1, 1)[0]);
+                            ball.dir.y = jumping ? Math.abs(ball.dir.y) + 1 : 1;
+                            ball.dir.x = paddleHit(ball, paddle) === 'center' ? (ball.dir.x > 0 ? 1 : -1) :
+                                (paddleHit(ball, paddle) === 'left' ? -2 : 2);
+                            players[key].balls.push(player.balls.splice(b * 1, 1)[0]);
 
                         }
 
                     }
 
 
-
-
                 }//let b in balls
-
 
 
             }
 
-
-
-
-
-
-
-
         }
+
+
+
+
+
+
+
 
         //load next level if needed
         if (blocks.every(block => !block))
