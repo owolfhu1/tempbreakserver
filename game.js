@@ -1,4 +1,4 @@
-const Constants = require('../constants/Constants');
+const Constants = require('./constants/Constants');
 const levels = require('./levels');
 const SSCD = require('sscd').sscd;
 
